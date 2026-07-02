@@ -4,8 +4,6 @@
 
 </div>
 
----
-
 ## Description
 
 FlareLog Skill is a small, focused AI skill for logging, error monitoring, and observability in JavaScript applications. It helps developers integrate FlareLog into their apps, providing insights into errors, logs, and performance metrics.
