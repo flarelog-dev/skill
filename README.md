@@ -21,4 +21,4 @@ Contributions are welcome. Please open issues for bugs or feature requests, and 
 
 ## License
 
-Specify a license for the project (for example, add a `LICENSE` file). If you want, I can add a recommended license.
+MIT License. See [LICENSE](LICENSE.md) for details.
