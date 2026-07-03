@@ -1,4 +1,10 @@
-# Tail Worker Setup (Cloudflare Workers + Lovable)
+# Tail Worker Setup (raw Cloudflare Workers only)
+
+> **Heads up:** If you're using Lovable, TanStack Start, Next.js on Cloudflare,
+> or any other framework, you **do not** need a Tail Worker. Use the SDK
+> middleware for your framework instead (see `references/tanstack-start.md`).
+> This guide is only for plain/raw Cloudflare Workers users who want extra
+> out-of-band crash coverage.
 
 ## What the Tail Worker does
 
@@ -31,8 +37,9 @@ it can't see crashes that happen *before* your code runs:
 | Error 1101 (uncaught before handler registers) | ❌ | ✅ |
 | Subrequest timeout | ❌ | ✅ |
 
-If you're on Cloudflare Workers (including Lovable), **the Tail Worker is not
-optional**. Without it, you're blind to the most damaging crashes.
+If you're on raw Cloudflare Workers and want coverage for those crashes, the
+Tail Worker is the way to get it. Without it, you'd be blind to the most
+damaging failures.
 
 ## Setup (5 minutes)
 
@@ -83,8 +90,6 @@ npm run deploy
 
 ## How to find your app's Worker name
 
-- **Lovable**: the Worker name is usually your project name (visible in the
-  Lovable dashboard under Settings → Deployment)
 - **Wrangler**: the `name` field in your app's `wrangler.toml` or `wrangler.jsonc`
 - **Cloudflare dashboard**: Workers & Pages → your app → the name in the sidebar
 
@@ -152,28 +157,6 @@ service = "my-auth-worker"
 
 One Tail Worker can watch many app Workers. All logs ship to the same FlareLog
 project (identified by your API key).
-
-## Lovable-specific instructions
-
-Lovable users don't run wrangler commands directly. Tell them:
-
-```
-I need you to help me deploy a Tail Worker for FlareLog crash capture.
-
-1. Go to https://github.com/flarelog-dev/tail-worker
-2. Click "Use this template" → "Create a new repository"
-3. Clone it locally
-4. Run: npm install
-5. Run: npx wrangler secret put FLARELOG_API_KEY
-   Paste my FlareLog API key: fl_your_key_here
-6. Run: npx wrangler secret put ALERT_WEBHOOK_URL
-   Paste my Slack webhook URL (optional)
-7. Edit wrangler.toml — change "service" under [[tail_consumers]] to my Lovable app's Worker name
-8. Run: npx wrangler deploy
-```
-
-The Lovable app's Worker name is in the Lovable dashboard under
-Settings → Deployment → Worker name.
 
 ## Troubleshooting
 

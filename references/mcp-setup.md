@@ -91,4 +91,4 @@ Yes:
 
 ## See also
 
-- `references/tail-worker.md` — captures the crashes the MCP server will show your AI
+- `references/tail-worker.md` — optional raw-Worker crash capture (not needed for Lovable/framework users)

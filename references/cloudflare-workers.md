@@ -235,22 +235,23 @@ export class MyDurableObject {
 }
 ```
 
-## The Tail Worker (CRITICAL — do not skip)
+## Optional: Tail Worker for raw Cloudflare Workers
 
-The SDK above captures errors thrown *during* request handling. But it can't
-see crashes that happen *before* your code runs:
+The SDK above captures errors thrown *during* request handling. It can't see
+crashes that happen *before* your code runs:
 - CPU timeout (50ms free / 30s paid)
 - Memory exhaustion (128MB limit, Error 1027)
 - Startup failure (bad import, missing binding)
 - Error 1101 (uncaught exception before handler registers)
 
-For these, you need the Tail Worker. See `references/tail-worker.md` for setup.
+If you want coverage for those cases on a raw Cloudflare Worker, deploy the
+optional Tail Worker. See `references/tail-worker.md` for setup.
 
-**Every Cloudflare Workers user should deploy the Tail Worker.** The SDK alone
-is not enough — it misses the most damaging crashes.
+If you are using a framework such as Hono, TanStack Start, or Lovable, this is
+not required — the SDK middleware is enough.
 
 ## See also
 
-- `references/tail-worker.md` — Tail Worker setup (do not skip)
+- `references/tail-worker.md` — optional Tail Worker setup for raw Worker coverage
 - `references/env-resolution.md` — how env vars work on Workers
 - `references/hono.md` — if using Hono on Workers

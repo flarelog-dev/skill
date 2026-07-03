@@ -1,5 +1,9 @@
 # TanStack Start + Lovable Setup
 
+This guide covers TanStack Start apps, including those built with Lovable.
+For Lovable you only need the SDK middleware — no separate Tail Worker to
+install or extra repos to clone.
+
 ## When to use this reference
 
 - User mentions Lovable, `lovable.app`, or `lovable.dev`
@@ -159,17 +163,17 @@ export const Route = createFileRoute("/api/orders/$id")({
 
 ## Lovable-specific instructions
 
-If the user is on Lovable, they edit via chat — they don't write code directly.
-Tell them to paste this into the Lovable chat:
+Lovable users edit through chat, not files. Give them a message they can paste
+straight into the Lovable chat:
 
 ```
 Add FlareLog logging to my app.
 
 1. Install @flarelog/sdk
-2. In src/start.ts, add the zero-config middleware:
-   import { tanstackStartMiddleware } from "@flarelog/sdk/tanstack-start";
-   Add tanstackStartMiddleware() to the requestMiddleware array in createStart().
-3. I'll add FLARELOG_API_KEY as a secret in Lovable's Secrets panel.
+2. In src/start.ts, import tanstackStartMiddleware from "@flarelog/sdk/tanstack-start"
+   and add it to the requestMiddleware array with `as never`
+3. Add a secret called FLARELOG_API_KEY in Lovable's Secrets panel
+   (do not prefix it with VITE_)
 ```
 
 Then tell them to add the API key in Lovable's project settings under
@@ -177,6 +181,11 @@ Then tell them to add the API key in Lovable's project settings under
 - Name: `FLARELOG_API_KEY`
 - Value: `fl_their_key_here`
 - **Do NOT prefix with `VITE_`** — that leaks the key to the browser
+
+You can also share the one-line summary:
+
+> "No Tail Worker needed — the FlareLog SDK inside your app handles all the
+> crash and error tracking."
 
 ## Merging with existing CSRF middleware
 
@@ -247,5 +256,4 @@ quirk, not a FlareLog bug.
 ## See also
 
 - `references/env-resolution.md` — full env var resolution matrix
-- `references/tail-worker.md` — Tail Worker setup for crash capture on Workers
 - `references/mcp-setup.md` — connect Cursor/Claude for AI debugging

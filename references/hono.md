@@ -82,8 +82,8 @@ The child logger includes `{ source: "hono", traceId, method, path }`.
 ## Hono on Cloudflare Workers
 
 Hono runs natively on Workers. The zero-arg form handles `env` binding
-resolution automatically. For best results, also deploy the Tail Worker (see
-`references/tail-worker.md`).
+resolution automatically. No separate Tail Worker is needed — the middleware
+captures request errors and sends them to FlareLog.
 
 ```typescript
 export default {
@@ -103,5 +103,4 @@ export default {
 ## See also
 
 - `references/env-resolution.md` — env var matrix
-- `references/tail-worker.md` — crash capture on Workers
-- `references/cloudflare-workers.md` — raw Workers setup
+- `references/cloudflare-workers.md` — raw Workers setup (only if you need optional Tail Worker coverage)

@@ -4,10 +4,10 @@ description: >-
   Add FlareLog logging, error monitoring, and observability to any JavaScript app.
   Handles Cloudflare Workers, Vercel, Lovable, TanStack Start, Next.js, Hono, Express,
   React, and plain Node.js. Use this skill whenever the user mentions FlareLog,
-  flarelog, @flarelog/sdk, error logging, observability, crash capture, Tail Worker,
+  flarelog, @flarelog/sdk, error logging, observability, crash capture,
   cost burn alerts, or wants to add logging/monitoring to their app — even if they
   don't name FlareLog explicitly. Also use when the user is deploying a Lovable,
-  Cursor, or AI-generated app and needs production visibility.
+  Cursor, v0, Bolt, or AI-generated app and needs production visibility.
 ---
 
 # FlareLog Integration Skill
@@ -18,22 +18,22 @@ JavaScript runtime to a FlareLog dashboard or any OTLP backend.
 
 ## The two-layer architecture (understand this first)
 
-FlareLog has **two complementary layers**. Most users need both:
+For almost every app, **the SDK (`@flarelog/sdk`) is all you need**. It runs
+*inside* the user's app. Captures errors thrown during request handling,
+console.log output, and unhandled rejections. Installed via
+`npm install @flarelog/sdk`. Framework-specific wrappers live at subpaths like
+`@flarelog/sdk/tanstack-start`, `@flarelog/sdk/hono`, etc.
 
-1. **The SDK** (`@flarelog/sdk`) — runs *inside* the user's app. Captures errors
-   thrown during request handling, console.log output, and unhandled rejections.
-   Installed via `npm install @flarelog/sdk`. Framework-specific wrappers live at
-   subpaths like `@flarelog/sdk/tanstack-start`, `@flarelog/sdk/hono`, etc.
+There is also an optional **Tail Worker** layer that only applies to **raw
+Cloudflare Workers** (not Lovable, not TanStack Start, not Vercel, not Node).
+It runs *outside* the app and catches crashes the SDK can't see: CPU timeouts,
+memory exhaustion, startup failures, and Error 1101. It is deployed from the
+[tail-worker template](https://github.com/flarelog-dev/tail-worker).
 
-2. **The Tail Worker** (Cloudflare Workers only) — runs *outside* the user's app,
-   after each request finishes. Captures crashes the SDK can't see: CPU timeouts,
-   memory exhaustion (Error 1027), startup failures, and Error 1101. Deployed as
-   a separate Worker from the [tail-worker template](https://github.com/flarelog-dev/tail-worker).
-
-If the user is on Cloudflare Workers (including Lovable), they need **both** the
-SDK and the Tail Worker. The SDK alone misses the most damaging crashes. Make sure
-to explain this — it's the #1 reason users think "FlareLog doesn't work" when
-they only installed the SDK.
+If the user is on **Lovable or TanStack Start**, do **not** mention the Tail
+Worker. The SDK middleware handles crash capture for them. Only bring up the
+Tail Worker if the user explicitly says they are on a raw Cloudflare Worker and
+wants that extra out-of-band coverage.
 
 ## Step 1: Identify the user's stack
 
@@ -72,9 +72,9 @@ that framework.
 | Vercel (Serverless / Edge) | `references/vercel.md` |
 | React / Browser | `references/react.md` |
 
-If the user is on Cloudflare Workers (any framework), also read
-`references/tail-worker.md` — it covers the Tail Worker setup that catches
-crashes the SDK misses.
+If the user is on **raw Cloudflare Workers** and explicitly wants out-of-band
+crash coverage, read `references/tail-worker.md`. For every other stack —
+including Lovable and TanStack Start — skip the Tail Worker entirely.
 
 ## Step 3: Walk the user through setup
 
@@ -118,19 +118,15 @@ scope with `flarelog({ apiKey: env.FLARELOG_API_KEY })`. The `env` binding is
 lazily on the first request. This is the #1 cause of "logs work in dev but not
 in preview" — see `references/env-resolution.md` for the full matrix.
 
-### 3d. Deploy the Tail Worker (Cloudflare Workers only)
+### 3d. Optional: Tail Worker for raw Cloudflare Workers (Lovable users skip this)
 
-If the user is on Cloudflare Workers or Lovable, the SDK alone is not enough —
-it can't see crashes that happen before the code runs (CPU timeout, OOM, startup
-failure, Error 1101). They need the Tail Worker.
+For Lovable, TanStack Start, Next.js, Hono on Workers, Vercel, Express, React,
+and Node, the SDK is enough. **Do not mention the Tail Worker to these users.**
 
-Walk them through:
-1. Clone `https://github.com/flarelog-dev/tail-worker`
-2. `wrangler secret put FLARELOG_API_KEY`
-3. Edit `wrangler.toml` to point at their app's Worker name
-4. `npm run deploy`
-
-See `references/tail-worker.md` for the full instructions and pitfalls.
+Only mention the Tail Worker if the user is on a **raw Cloudflare Worker** and
+explicitly asks for out-of-band crash capture (CPU timeouts, OOM, startup
+failures, Error 1101). Even then, present it as an optional advanced add-on.
+See `references/tail-worker.md`.
 
 ### 3e. (Optional) Connect the MCP server
 
@@ -167,8 +163,9 @@ If logs don't appear:
    `new Function("return import(spec)")` so it's invisible to static analysis.
    If you're writing custom code that reads the binding, use the same pattern.
 
-4. **Forgetting the Tail Worker** — the SDK alone misses Error 1101, CPU
-   timeouts, and OOM crashes. On Workers, always set up the Tail Worker too.
+4. **Telling Lovable users they need a Tail Worker** — they don't. The SDK
+   middleware catches request errors and ships them to FlareLog. Mentioning a
+   separate Tail Worker will confuse vibe coders and isn't required.
 
 5. **`VITE_` prefix on Lovable** — don't prefix `FLARELOG_API_KEY` with `VITE_`.
    That pushes the key into the client bundle and leaks it. Server-only secrets
@@ -180,15 +177,22 @@ If logs don't appear:
 
 ## Tone and audience
 
-Many FlareLog users are "vibe coders" — they built their app with Lovable, Cursor,
-v0, or Bolt, and they're not experienced developers. They don't know what
-"observability" or "OTel" means. When you detect this audience:
+Many FlareLog users are "vibe coders" — they built their app with Lovable,
+Cursor, v0, or Bolt and they're not experienced developers. They don't know what
+"observability" or "OTel" means, and they don't edit Wrangler configs.
 
-- Use plain English, not jargon
-- Explain *why* each step matters (not just *what* to do)
-- Emphasize the 5-minute setup promise
-- Don't assume they know what a "Worker" or "binding" is — explain briefly
-- Offer to walk through each step interactively
+When you detect this audience (especially Lovable):
+
+- Use plain English, not jargon. Say "logs and error tracking" instead of
+  "observability." Say "Your app's dashboard" instead of "Worker bindings."
+- Explain *why* a step matters in one sentence, then give the exact code or
+  chat prompt.
+- Give them copy/paste blocks they can drop into the Lovable chat.
+- Emphasize the "5-minute setup" promise.
+- Don't assume they know what a "Worker", "middleware", or "env binding" is —
+  name the file (`src/start.ts`) and the line they need to add.
+- Keep instructions short. One ask per message is better than a wall of text.
+- Offer to walk them through it step by step.
 
 For experienced developers (they mention wrangler, TypeScript, CI/CD), you can
 be more technical and skip the hand-holding.
@@ -199,5 +203,6 @@ be more technical and skip the hand-holding.
 - Don't tell users to use `getRequestEvent()` — it doesn't exist in v1 stable
 - Don't create loggers at module scope on Cloudflare Workers
 - Don't tell users to remove Sentry (they coexist fine)
-- Don't skip the Tail Worker on Cloudflare Workers — it's not optional for crash capture
+- Don't mention the Tail Worker to Lovable, TanStack Start, or other framework
+  users — the SDK is all they need
 - Don't prefix env vars with `VITE_` on Lovable
