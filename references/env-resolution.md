@@ -30,7 +30,8 @@ from the first source that has it, in this exact order:
 | 1 (highest) | Explicit `env` arg to `autoLogger(env)` | Everywhere | Pass `c.env` (Hono), `context.env` (Pages), or your own record |
 | 2 | `process.env.FLARELOG_API_KEY` | Node, Vercel, Cloudflare Workers **with `nodejs_compat`** | `.env` file (dev), dashboard env vars (Vercel), `[vars]` in `wrangler.jsonc` (Workers) |
 | 3 | `cloudflare:workers` `env` binding | Cloudflare Workers **without `nodejs_compat`**, Lovable | `wrangler secret put` or dashboard secrets |
-| 4 (fallback) | Nothing found → console-only + `console.warn` | — | — |
+| 4 | Public env vars exposed by the frontend bundler | Browser / frontend apps | `VITE_FLARELOG_API_KEY`, `NEXT_PUBLIC_FLARELOG_API_KEY`, `REACT_APP_FLARELOG_API_KEY` |
+| 5 (fallback) | Nothing found → console-only + `console.warn` | — | — |
 
 ## Concrete answers to common questions
 
@@ -66,6 +67,28 @@ And ships nothing. Silence it with `flarelog({ warnOnConsoleFallback: false })`.
 
 ```typescript
 const logger = flarelog({ apiKey: process.env.FLARELOG_API_KEY! });
+```
+
+### Browser / frontend apps (Vite, Next.js, CRA)
+
+The same `FLARELOG_API_KEY` is used in the browser, but your build tool decides
+whether the variable is exposed to the client bundle:
+
+| Framework | Env var name | How to read it |
+|-----------|--------------|----------------|
+| Vite | `VITE_FLARELOG_API_KEY` | `import.meta.env.VITE_FLARELOG_API_KEY` |
+| Next.js | `NEXT_PUBLIC_FLARELOG_API_KEY` | `process.env.NEXT_PUBLIC_FLARELOG_API_KEY` |
+| Create React App | `REACT_APP_FLARELOG_API_KEY` | `process.env.REACT_APP_FLARELOG_API_KEY` |
+
+```bash
+# .env (Vite example)
+VITE_FLARELOG_API_KEY=fl_your_key
+```
+
+```typescript
+const logger = flarelog({
+  apiKey: import.meta.env.VITE_FLARELOG_API_KEY,
+});
 ```
 
 ### Cloudflare Workers with `nodejs_compat`

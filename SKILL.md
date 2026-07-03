@@ -110,6 +110,12 @@ The user needs a `FLARELOG_API_KEY`. They get it from the FlareLog dashboard at
 | Cloudflare Workers (with `nodejs_compat`) | `wrangler.jsonc` `[vars]` or dashboard secrets — `process.env` works per-request inside `.server()` callbacks |
 | Cloudflare Workers (without `nodejs_compat`) | Dashboard secrets only — read via `cloudflare:workers` `env` binding. The zero-arg middleware handles this automatically. |
 | Lovable | Lovable's "Secrets / Environment variables" panel (do NOT prefix with `VITE_`) |
+| React / Browser (Vite) | `.env` file — `VITE_FLARELOG_API_KEY=fl_your_key` then `import.meta.env.VITE_FLARELOG_API_KEY` |
+| Next.js client code | `.env.local` — `NEXT_PUBLIC_FLARELOG_API_KEY=fl_your_key` |
+
+The `VITE_` rule is only for server-side Lovable secrets. Browser code
+*built with Vite* needs the `VITE_` prefix so the bundler exposes the env var
+to the client.
 
 **Critical for Cloudflare Workers / Lovable:** Do NOT create the logger at module
 scope with `flarelog({ apiKey: env.FLARELOG_API_KEY })`. The `env` binding is

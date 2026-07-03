@@ -72,9 +72,20 @@ FLARELOG_ENVIRONMENT=production
 FLARELOG_RELEASE=1.2.3
 ```
 
-For browser-side logging, create a separate client logger with a public key:
+For browser-side logging, use the **same** API key with the `NEXT_PUBLIC_`
+prefix so Next.js exposes it to the browser bundle:
+
 ```bash
-NEXT_PUBLIC_FLARELOG_CLIENT_KEY=fl_public_key
+# .env.local
+NEXT_PUBLIC_FLARELOG_API_KEY=fl_your_key
+```
+
+Then in client code:
+
+```typescript
+const clientLogger = flarelog({
+  apiKey: process.env.NEXT_PUBLIC_FLARELOG_API_KEY!,
+});
 ```
 
 ## What the wrappers do

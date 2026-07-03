@@ -21,7 +21,8 @@ import { flarelog } from "@flarelog/sdk";
 import { FlareLogErrorBoundary } from "@flarelog/sdk/react";
 
 const logger = flarelog({
-  apiKey: process.env.NEXT_PUBLIC_FLARELOG_KEY!, // or REACT_APP_ / VITE_
+  apiKey: import.meta.env.VITE_FLARELOG_API_KEY,
+  // or process.env.REACT_APP_FLARELOG_API_KEY for Create React App
 });
 
 export default function App() {
@@ -71,14 +72,21 @@ function HomePage() {
 
 ## API key for the browser
 
-**Do NOT use your server-side `FLARELOG_API_KEY` in the browser** — it would
-leak your key to anyone who inspects the page source.
+Use the **same** `FLARELOG_API_KEY` everywhere. The only difference is that
+most frontend build tools require a prefix to expose an env var to the browser:
 
-Create a separate client-side key in the FlareLog dashboard (marked as
-"public") and expose it via your framework's public env var prefix:
-- Next.js: `NEXT_PUBLIC_FLARELOG_CLIENT_KEY`
-- Vite: `VITE_FLARELOG_CLIENT_KEY`
-- Create React App: `REACT_APP_FLARELOG_CLIENT_KEY`
+- **Vite**: `VITE_FLARELOG_API_KEY` → read with `import.meta.env.VITE_FLARELOG_API_KEY`
+- **Next.js**: `NEXT_PUBLIC_FLARELOG_API_KEY` → read with `process.env.NEXT_PUBLIC_FLARELOG_API_KEY`
+- **Create React App**: `REACT_APP_FLARELOG_API_KEY` → read with `process.env.REACT_APP_FLARELOG_API_KEY`
+
+```bash
+# .env (Vite example)
+VITE_FLARELOG_API_KEY=fl_your_key
+```
+
+The prefix only tells the bundler to inject the value into the client bundle.
+It is **not** a different or safer/less-safe key — it is the same FlareLog API
+key used on the server.
 
 ## What the components do
 
