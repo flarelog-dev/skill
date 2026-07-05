@@ -1,8 +1,8 @@
-<div align="center">
 
-# 🌱 FlareLog Skill
+<img alt="flarelog logo" height="100px" src="https://flarelog.dev/logo.png" /> 
 
-</div>
+# FlareLog Skill
+
 
 ## Description
 
